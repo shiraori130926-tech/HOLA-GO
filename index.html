@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <meta
+      name="description"
+      content="HoLa-Go — bản đồ cộng đồng chia sẻ tình hình giao thông tại Hòa Lạc."
+    />
+
+    <meta name="theme-color" content="#18794e" />
+
+    <title>HoLa-Go — Bản đồ cộng đồng Hòa Lạc</title>
+  </head>
+
+  <body>
+    <header class="header">
+      <a class="brand" href="/" aria-label="Trang chủ HoLa-Go">
+        <span class="brand-icon" aria-hidden="true">🧭</span>
+
+        <span>
+          <strong>HoLa-Go</strong>
+          <small>Hòa Lạc cùng kết nối</small>
+        </span>
+      </a>
+
+      <div class="header-actions">
+        <span id="connection-status" class="connection-status">
+          Đang khởi động
+        </span>
+
+        <button
+          id="create-report-button"
+          class="button button-primary"
+          type="button"
+        >
+          ➕ Tạo báo cáo
+        </button>
+
+        <button
+          id="auth-button"
+          class="button button-secondary"
+          type="button"
+        >
+          Đăng nhập
+        </button>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <aside class="sidebar" aria-label="Danh sách báo cáo">
+        <section class="search-section">
+          <label for="search-input" class="section-label">
+            Khám phá quanh bạn
+          </label>
+
+          <div class="search-box">
+            <span aria-hidden="true">🔎</span>
+
+            <input
+              id="search-input"
+              type="search"
+              placeholder="Tìm địa điểm hoặc báo cáo"
+              autocomplete="off"
+              maxlength="150"
+              aria-controls="search-results"
+            />
+          </div>
+
+          <div
+            id="search-results"
+            class="search-results"
+            aria-label="Gợi ý tìm kiếm"
+            hidden
+          ></div>
+
+          <p class="helper-text">
+            Gợi ý địa điểm Hòa Lạc và báo cáo cộng đồng.
+          </p>
+        </section>
+
+        <section class="filter-section">
+          <div class="section-heading">
+            <h2>Loại báo cáo</h2>
+
+            <button
+              id="reset-filters-button"
+              class="text-button"
+              type="button"
+            >
+              Đặt lại
+            </button>
+          </div>
+
+          <div id="type-filters" class="filter-grid"></div>
+
+          <label class="section-label" for="time-filter">
+            Thời gian đăng
+          </label>
+
+          <select id="time-filter">
+            <option value="all">Tất cả thời gian</option>
+            <option value="15">15 phút gần đây</option>
+            <option value="60">1 giờ gần đây</option>
+            <option value="360">6 giờ gần đây</option>
+          </select>
+        </section>
+
+        <section class="reports-section">
+          <div class="section-heading">
+            <h2>
+              Báo cáo
+              <span id="report-count" class="count-badge">0</span>
+            </h2>
+
+            <button
+              id="refresh-button"
+              class="text-button"
+              type="button"
+            >
+              ↻ Tải lại
+            </button>
+          </div>
+
+         <output id="list-message" class="list-message">
+  Đang tải báo cáo.
+</output>
+            Đang tải báo cáo.
+          </p>
+
+          <div id="report-list" class="report-list"></div>
+        </section>
+
+        <footer class="sidebar-footer">
+          Thông tin do cộng đồng đóng góp. Hãy quan sát thực tế
+          và giữ an toàn khi di chuyển.
+        </footer>
+      </aside>
+
+      <section class="map-section" aria-label="Bản đồ Hòa Lạc">
+        <div id="map"></div>
+
+        <div id="map-error" class="map-error" role="alert" hidden>
+          Không khởi tạo được bản đồ. Hãy kiểm tra kết nối mạng
+          và khả năng hỗ trợ WebGL của trình duyệt.
+        </div>
+
+        <div id="pick-banner" class="pick-banner" hidden>
+          <span>📍 Click lên bản đồ để chọn vị trí báo cáo</span>
+
+          <button
+            id="cancel-pick-button"
+            class="button button-secondary"
+            type="button"
+          >
+            Hủy chọn
+          </button>
+        </div>
+
+        <div class="map-caption">
+          📍 Hòa Lạc, Hà Nội
+        </div>
+      </section>
+    </main>
+
+    <dialog id="report-modal" class="modal">
+      <form id="report-form">
+        <div class="modal-header">
+          <div>
+            <h2>Tạo báo cáo</h2>
+            <p>Chia sẻ tình hình để mọi người di chuyển an toàn.</p>
+          </div>
+
+          <button
+            id="close-report-button"
+            class="icon-button"
+            type="button"
+            aria-label="Đóng biểu mẫu"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <label for="report-type">Loại báo cáo</label>
+
+          <select id="report-type" name="type" required></select>
+
+          <label for="report-title">Tiêu đề</label>
+
+          <input
+            id="report-title"
+            name="title"
+            type="text"
+            required
+            minlength="5"
+            maxlength="120"
+            placeholder="Ví dụ: Ngập nước ở lối vào khu trọ"
+          />
+
+          <label for="report-description">Mô tả</label>
+
+          <textarea
+            id="report-description"
+            name="description"
+            rows="4"
+            maxlength="2000"
+            placeholder="Mô tả tình hình, mức độ ảnh hưởng và lưu ý."
+          ></textarea>
+
+         <p class="section-label">Vị trí báo cáo</p>
+
+          <button
+            id="pick-location-button"
+            class="button button-secondary full-width"
+            type="button"
+          >
+            📍 Chọn vị trí trên bản đồ
+          </button>
+
+          <p id="selected-location" class="location-text">
+            Chưa chọn vị trí.
+          </p>
+
+          <p class="helper-text">
+            Không đăng thông tin cá nhân của người khác.
+            Với tình huống khẩn cấp, hãy liên hệ cơ quan chức năng.
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            id="submit-report-button"
+            class="button button-primary full-width"
+            type="submit"
+          >
+            Đăng báo cáo
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="auth-modal" class="modal auth-modal">
+      <form id="auth-form">
+        <div class="modal-header">
+          <div>
+            <h2>Tài khoản HoLa-Go</h2>
+            <p>Đăng nhập để tạo báo cáo và bình chọn.</p>
+          </div>
+
+          <button
+            id="close-auth-button"
+            class="icon-button"
+            type="button"
+            aria-label="Đóng đăng nhập"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <label for="auth-email">Email</label>
+
+          <input
+            id="auth-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            maxlength="254"
+            placeholder="ban@example.com"
+          />
+
+          <label for="auth-password">Mật khẩu</label>
+
+          <input
+            id="auth-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            minlength="8"
+            maxlength="128"
+            placeholder="Tối thiểu 8 ký tự"
+          />
+
+         <output id="auth-message" class="helper-text"></output>
+        </div>
+
+        <div class="modal-footer auth-actions">
+          <button
+            id="login-submit-button"
+            class="button button-primary"
+            type="submit"
+          >
+            Đăng nhập
+          </button>
+
+          <button
+            id="signup-button"
+            class="button button-secondary"
+            type="button"
+          >
+            Tạo tài khoản
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <div
+      id="toast-container"
+      class="toast-container"
+      aria-live="polite"
+      aria-atomic="false"
+    ></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
